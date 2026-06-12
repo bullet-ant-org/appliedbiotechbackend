@@ -1,0 +1,13 @@
+require('./User');
+require('./AcademyUser');
+require('./Product');
+require('./Collection');
+require('./Academy');
+require('./News');
+require('./Gallery');
+require('./DealOfTheWeek');
+require('./Analytics');
+require('./AppConfig');
+require('./Order');
+require('./Career');
+require('./Application');
