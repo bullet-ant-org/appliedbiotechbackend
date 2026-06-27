@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const OrderSchema = new mongoose.Schema({
   reference: { type: String, required: true, unique: true },
   trackingCode: { type: String, required: true, unique: true },
-  orderType: { type: String, enum: ['shop', 'academy'], required: true },
+  orderType: { type: String, enum: ['shop', 'academy', 'mixed'], required: true },
   email: { type: String, required: true },
   phone: { type: String, default: '' },
   shippingAddress: { type: mongoose.Schema.Types.Mixed, default: null },
