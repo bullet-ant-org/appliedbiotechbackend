@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerAcademyStudent, loginAcademyStudent, createCourse, getCourses, getCourseById, updateCourse, deleteCourse, getAcademyStudentsMetrics, renderSecurePdfStream } = require('../controllers/academyController');
+const { registerAcademyStudent, loginAcademyStudent, createCourse, getCourses, getCourseById, updateCourse, deleteCourse, getAcademyStudentsMetrics, renderSecurePdfStream, getMyProfile } = require('../controllers/academyController');
 const { protect, authorize, protectAcademy } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/uploadMiddleware');
 
@@ -8,6 +8,7 @@ router.post('/auth/register', registerAcademyStudent);
 router.post('/auth/login', loginAcademyStudent);
 
 // Specific static routes BEFORE /:id wildcard
+router.get('/auth/me', protectAcademy, getMyProfile);
 router.get('/administration/metrics', protect, authorize('admin', 'editor'), getAcademyStudentsMetrics);
 router.get('/course/:courseId/secure-read-stream', protectAcademy, renderSecurePdfStream);
 
