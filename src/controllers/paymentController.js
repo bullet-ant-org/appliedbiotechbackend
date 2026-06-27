@@ -213,4 +213,3 @@ exports.modifyTrackingOrderStatus = async (req, res, next) => {
     res.status(200).json(updatedModelRecord);
   } catch (err) { next(err); }
 };
-
