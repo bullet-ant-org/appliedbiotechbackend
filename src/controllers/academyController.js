@@ -116,7 +116,15 @@ exports.deleteCourse = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-exports.getAcademyStudentsMetrics = async (req, res, next) => {
+exports.getMyProfile = async (req, res, next) => {
+  try {
+    const student = await AcademyUser.findById(req.academyUser._id)
+      .populate('purchasedCourses.course')
+      .select('-password');
+    if (!student) return res.status(404).json({ message: 'Student profile not found.' });
+    res.status(200).json(student);
+  } catch (err) { next(err); }
+};
   try {
     res.status(200).json(await AcademyUser.find().populate('purchasedCourses.course purchasedBooks').select('-password'));
   } catch (err) { next(err); }
