@@ -125,6 +125,8 @@ exports.getMyProfile = async (req, res, next) => {
     res.status(200).json(student);
   } catch (err) { next(err); }
 };
+
+exports.getAcademyStudentsMetrics = async (req, res, next) => {
   try {
     res.status(200).json(await AcademyUser.find().populate('purchasedCourses.course purchasedBooks').select('-password'));
   } catch (err) { next(err); }
@@ -147,3 +149,4 @@ exports.renderSecurePdfStream = async (req, res, next) => {
     res.status(200).json({ course: structuralTargetCourse.courseTitle, page: targetsPage, streamUrl: sandboxedCloudinaryImageStreamUrl });
   } catch (err) { next(err); }
 };
+
