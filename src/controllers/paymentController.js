@@ -183,12 +183,37 @@ exports.retrieveSpecificOrderContextViaReference = async (req, res, next) => {
     const orderLog = await Order.findOne({ reference: req.params.reference }).populate('items.product courseItems.course');
     if (!orderLog) return res.status(404).json({ message: 'Order reference parameter untraceable.' });
 
-    // Fallback provisioning: webhook may not have fired yet by the time the frontend polls /verify
-    if (orderLog.status === 'paid' && orderLog.courseItems && orderLog.courseItems.length > 0) {
-      await grantCourseAccess(orderLog);
+    // If already paid, just run grant as safety net and return
+    if (orderLog.status === 'paid') {
+      if (orderLog.courseItems && orderLog.courseItems.length > 0) {
+        await grantCourseAccess(orderLog);
+      }
+      return res.status(200).json(orderLog);
     }
 
-    res.status(200).json(orderLog);
+    // Order still pending — verify directly with Paystack to see if payment went through
+    // (handles webhook delivery failures or delays)
+    try {
+      const paystackRes = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(req.params.reference)}`, {
+        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+      });
+      const paystackData = await paystackRes.json();
+
+      if (paystackData.status && paystackData.data?.status === 'success') {
+        // Payment confirmed by Paystack — mark as paid and grant access
+        orderLog.status = 'paid';
+        await orderLog.save();
+        if (orderLog.courseItems && orderLog.courseItems.length > 0) {
+          await grantCourseAccess(orderLog);
+        }
+      }
+    } catch (verifyErr) {
+      console.error('[PAYSTACK VERIFY FALLBACK ERROR]:', verifyErr.message);
+    }
+
+    // Re-fetch with populated fields after potential status update
+    const updatedOrder = await Order.findById(orderLog._id).populate('items.product courseItems.course');
+    res.status(200).json(updatedOrder);
   } catch (err) { next(err); }
 };
 
